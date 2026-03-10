@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Flight Alert</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+}
+
+body{
+margin:0;
+background:#f5f7fb;
+color:#111;
+transition:0.3s;
+}
+
+.dark{
+background:#0f172a;
+color:#e5e7eb;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:40px 20px;
+}
+
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:40px;
+}
+
+h1{
+font-size:28px;
+margin:0;
+}
+
+.toggle{
+cursor:pointer;
+padding:8px 14px;
+border-radius:20px;
+border:1px solid #ddd;
+background:white;
+}
+
+.dark .toggle{
+background:#1e293b;
+border:1px solid #374151;
+color:white;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+.dark .card{
+background:#1e293b;
+box-shadow:none;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+label{
+font-size:13px;
+font-weight:600;
+display:block;
+margin-bottom:5px;
+}
+
+input{
+width:100%;
+padding:12px;
+border-radius:8px;
+border:1px solid #ddd;
+font-size:14px;
+}
+
+.dark input{
+background:#0f172a;
+border:1px solid #374151;
+color:white;
+}
+
+button{
+margin-top:25px;
+width:100%;
+padding:14px;
+border:none;
+border-radius:8px;
+font-size:16px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+.autocomplete{
+position:relative;
+}
+
+.suggestions{
+position:absolute;
+top:45px;
+left:0;
+right:0;
+background:white;
+border-radius:8px;
+border:1px solid #ddd;
+max-height:200px;
+overflow:auto;
+display:none;
+z-index:10;
+}
+
+.dark .suggestions{
+background:#1e293b;
+border:1px solid #374151;
+}
+
+.suggestions div{
+padding:10px;
+cursor:pointer;
+}
+
+.suggestions div:hover{
+background:#f1f5f9;
+}
+
+.dark .suggestions div:hover{
+background:#334155;
+}
+
+.success{
+margin-top:15px;
+color:#22c55e;
+display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+<h1>Flight Price Alert</h1>
+
+<div class="toggle" onclick="toggleDark()">
+Dark Mode
+</div>
+
+</header>
+
+<div class="card">
+
+<div class="grid">
+
+<div class="autocomplete">
+<label>Origem</label>
+<input id="origin" placeholder="Cidade ou aeroporto">
+<div id="origin-list" class="suggestions"></div>
+</div>
+
+<div class="autocomplete">
+<label>Destino</label>
+<input id="destination" placeholder="Cidade ou aeroporto">
+<div id="destination-list" class="suggestions"></div>
+</div>
+
+<div>
+<label>Data</label>
+<input type="date" id="date">
+</div>
+
+<div>
+<label>Preço máximo</label>
+<input type="number" id="price" placeholder="R$">
+</div>
+
+</div>
+
+<label style="margin-top:20px">Email</label>
+<input id="email" placeholder="seu@email.com">
+
+<button onclick="createAlert()">
+Criar Alerta
+</button>
+
+<div id="success" class="success">
+Alerta criado com sucesso
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const airports = [
+{city:"São Paulo", code:"GRU"},
+{city:"Rio de Janeiro", code:"GIG"},
+{city:"Lisboa", code:"LIS"},
+{city:"Paris", code:"CDG"},
+{city:"Nova York", code:"JFK"},
+{city:"Londres", code:"LHR"},
+{city:"Madrid", code:"MAD"},
+{city:"Barcelona", code:"BCN"}
+]
+
+function setupAutocomplete(inputId,listId){
+
+const input=document.getElementById(inputId)
+const list=document.getElementById(listId)
+
+input.addEventListener("input",()=>{
+
+const value=input.value.toLowerCase()
+list.innerHTML=""
+
+if(value.length<1){
+list.style.display="none"
+return
+}
+
+const results=airports.filter(a=>
+a.city.toLowerCase().includes(value) ||
+a.code.toLowerCase().includes(value)
+)
+
+results.forEach(a=>{
+const div=document.createElement("div")
+div.textContent=`${a.city} (${a.code})`
+div.onclick=()=>{
+input.value=a.code
+list.style.display="none"
+}
+list.appendChild(div)
+})
+
+list.style.display="block"
+
+})
+
+}
+
+setupAutocomplete("origin","origin-list")
+setupAutocomplete("destination","destination-list")
+
+function toggleDark(){
+document.body.classList.toggle("dark")
+}
+
+async function createAlert(){
+
+const body={
+origin:document.getElementById("origin").value,
+destination:document.getElementById("destination").value,
+date:document.getElementById("date").value,
+price:document.getElementById("price").value,
+email:document.getElementById("email").value
+}
+
+try{
+
+await fetch("http://localhost:5678/webhook/flight-alert",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(body)
+})
+
+document.getElementById("success").style.display="block"
+
+}catch(e){
+alert("Erro ao enviar alerta")
+}
+
+}
+
+</script>
+
+</body>
+</html>
