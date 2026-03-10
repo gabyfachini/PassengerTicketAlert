@@ -1,0 +1,9 @@
+JSON enviado para o webhook
+
+{
+  "origin": "GRU",
+  "destination": "LIS",
+  "date": "2026-06-10",
+  "price": 2500,
+  "email": "user@email.com"
+}

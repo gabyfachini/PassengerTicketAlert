@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Flight Alert</title>
+<title>Flight Price Alerts</title>
+
+<script src="airports.js"></script>
 
 <style>
 
 *{
 box-sizing:border-box;
-font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+font-family:system-ui;
 }
 
 body{
@@ -36,12 +39,7 @@ header{
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:40px;
-}
-
-h1{
-font-size:28px;
-margin:0;
+margin-bottom:30px;
 }
 
 .toggle{
@@ -54,8 +52,8 @@ background:white;
 
 .dark .toggle{
 background:#1e293b;
-border:1px solid #374151;
 color:white;
+border:1px solid #374151;
 }
 
 .card{
@@ -67,7 +65,6 @@ box-shadow:0 10px 30px rgba(0,0,0,0.08);
 
 .dark .card{
 background:#1e293b;
-box-shadow:none;
 }
 
 .grid{
@@ -83,7 +80,7 @@ display:block;
 margin-bottom:5px;
 }
 
-input{
+input,select{
 width:100%;
 padding:12px;
 border-radius:8px;
@@ -91,14 +88,14 @@ border:1px solid #ddd;
 font-size:14px;
 }
 
-.dark input{
+.dark input,.dark select{
 background:#0f172a;
 border:1px solid #374151;
 color:white;
 }
 
 button{
-margin-top:25px;
+margin-top:20px;
 width:100%;
 padding:14px;
 border:none;
@@ -119,12 +116,12 @@ position:relative;
 
 .suggestions{
 position:absolute;
+background:white;
+border:1px solid #ddd;
+border-radius:8px;
 top:45px;
 left:0;
 right:0;
-background:white;
-border-radius:8px;
-border:1px solid #ddd;
 max-height:200px;
 overflow:auto;
 display:none;
@@ -149,13 +146,22 @@ background:#f1f5f9;
 background:#334155;
 }
 
-.success{
-margin-top:15px;
-color:#22c55e;
-display:none;
+.history{
+margin-top:30px;
+}
+
+.history-item{
+padding:10px;
+border-bottom:1px solid #eee;
+font-size:14px;
+}
+
+.dark .history-item{
+border-bottom:1px solid #374151;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -164,9 +170,9 @@ display:none;
 
 <header>
 
-<h1>Flight Price Alert</h1>
+<h2>Flight Price Alerts</h2>
 
-<div class="toggle" onclick="toggleDark()">
+<div id="themeToggle" class="toggle" onclick="toggleTheme()">
 Dark Mode
 </div>
 
@@ -177,39 +183,54 @@ Dark Mode
 <div class="grid">
 
 <div class="autocomplete">
-<label>Origem</label>
-<input id="origin" placeholder="Cidade ou aeroporto">
+<label>Origin</label>
+<input id="origin">
 <div id="origin-list" class="suggestions"></div>
 </div>
 
 <div class="autocomplete">
-<label>Destino</label>
-<input id="destination" placeholder="Cidade ou aeroporto">
+<label>Destination</label>
+<input id="destination">
 <div id="destination-list" class="suggestions"></div>
 </div>
 
 <div>
-<label>Data</label>
-<input type="date" id="date">
+<label>Trip Type</label>
+<select id="tripType" onchange="toggleReturn()">
+<option value="round">Round Trip</option>
+<option value="oneway">One Way</option>
+</select>
 </div>
 
 <div>
-<label>Preço máximo</label>
-<input type="number" id="price" placeholder="R$">
+<label>Max Price</label>
+<input type="number" id="price">
+</div>
+
+<div>
+<label>Departure Date</label>
+<input type="date" id="departure">
+</div>
+
+<div id="returnContainer">
+<label>Return Date</label>
+<input type="date" id="returnDate">
 </div>
 
 </div>
 
 <label style="margin-top:20px">Email</label>
-<input id="email" placeholder="seu@email.com">
+<input id="email">
 
-<button onclick="createAlert()">
-Criar Alerta
-</button>
+<button onclick="createAlert()">Create Alert</button>
 
-<div id="success" class="success">
-Alerta criado com sucesso
 </div>
+
+<div class="history">
+
+<h3>Alert History</h3>
+
+<div id="historyList"></div>
 
 </div>
 
@@ -217,18 +238,30 @@ Alerta criado com sucesso
 
 <script>
 
-const airports = [
-{city:"São Paulo", code:"GRU"},
-{city:"Rio de Janeiro", code:"GIG"},
-{city:"Lisboa", code:"LIS"},
-{city:"Paris", code:"CDG"},
-{city:"Nova York", code:"JFK"},
-{city:"Londres", code:"LHR"},
-{city:"Madrid", code:"MAD"},
-{city:"Barcelona", code:"BCN"}
-]
+function toggleTheme(){
 
-function setupAutocomplete(inputId,listId){
+document.body.classList.toggle("dark")
+
+const toggle=document.getElementById("themeToggle")
+
+if(document.body.classList.contains("dark")){
+toggle.innerText="Light Mode"
+}else{
+toggle.innerText="Dark Mode"
+}
+
+}
+
+function toggleReturn(){
+
+const trip=document.getElementById("tripType").value
+const container=document.getElementById("returnContainer")
+
+container.style.display=trip==="oneway"?"none":"block"
+
+}
+
+function autocomplete(inputId,listId){
 
 const input=document.getElementById(inputId)
 const list=document.getElementById(listId)
@@ -236,6 +269,7 @@ const list=document.getElementById(listId)
 input.addEventListener("input",()=>{
 
 const value=input.value.toLowerCase()
+
 list.innerHTML=""
 
 if(value.length<1){
@@ -245,17 +279,24 @@ return
 
 const results=airports.filter(a=>
 a.city.toLowerCase().includes(value) ||
-a.code.toLowerCase().includes(value)
+a.country.toLowerCase().includes(value) ||
+a.code.toLowerCase().includes(value) ||
+a.name.toLowerCase().includes(value)
 )
 
-results.forEach(a=>{
+results.slice(0,20).forEach(a=>{
+
 const div=document.createElement("div")
-div.textContent=`${a.city} (${a.code})`
+
+div.innerText=`${a.city} - ${a.code} (${a.country})`
+
 div.onclick=()=>{
 input.value=a.code
 list.style.display="none"
 }
+
 list.appendChild(div)
+
 })
 
 list.style.display="block"
@@ -264,42 +305,59 @@ list.style.display="block"
 
 }
 
-setupAutocomplete("origin","origin-list")
-setupAutocomplete("destination","destination-list")
+autocomplete("origin","origin-list")
+autocomplete("destination","destination-list")
 
-function toggleDark(){
-document.body.classList.toggle("dark")
+function createAlert(){
+
+const alertData={
+
+origin:origin.value,
+destination:destination.value,
+tripType:tripType.value,
+departure:departure.value,
+returnDate:returnDate.value,
+price:price.value,
+email:email.value
+
 }
 
-async function createAlert(){
+let alerts=JSON.parse(localStorage.getItem("alerts")||"[]")
 
-const body={
-origin:document.getElementById("origin").value,
-destination:document.getElementById("destination").value,
-date:document.getElementById("date").value,
-price:document.getElementById("price").value,
-email:document.getElementById("email").value
+alerts.push(alertData)
+
+localStorage.setItem("alerts",JSON.stringify(alerts))
+
+renderHistory()
+
 }
 
-try{
+function renderHistory(){
 
-await fetch("http://localhost:5678/webhook/flight-alert",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(body)
+const list=document.getElementById("historyList")
+
+list.innerHTML=""
+
+let alerts=JSON.parse(localStorage.getItem("alerts")||"[]")
+
+alerts.forEach(a=>{
+
+const div=document.createElement("div")
+
+div.className="history-item"
+
+div.innerText=`${a.origin} → ${a.destination} | ${a.departure}`
+
+list.appendChild(div)
+
 })
 
-document.getElementById("success").style.display="block"
-
-}catch(e){
-alert("Erro ao enviar alerta")
 }
 
-}
+renderHistory()
 
 </script>
 
 </body>
+
 </html>
