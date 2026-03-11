@@ -1,0 +1,151 @@
+* { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+
+body {
+    margin: 0;
+    background: #f8fafc;
+    color: #1e293b;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.dark {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+
+.container { max-width: 800px; margin: auto; padding: 40px 20px; }
+
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+.toggle {
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dark .toggle { background: #1e293b; border-color: #334155; }
+
+.card {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.dark .card { background: #1e293b; box-shadow: none; }
+
+/* Grid e Layout */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+/* Route Container para o Swap */
+.route-container {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.route-container .autocomplete { flex: 1; }
+
+#swapBtn {
+    width: 40px;
+    height: 40px;
+    margin-top: 20px; /* Alinha com os inputs ignorando o label */
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #2563eb;
+    border: 1px solid #e2e8f0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#swapBtn:hover { transform: rotate(180deg); background: #e2e8f0; }
+
+.dark #swapBtn { background: #334155; border-color: #475569; color: #60a5fa; }
+
+/* Inputs e Selects */
+label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #64748b; }
+.dark label { color: #94a3b8; }
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    font-size: 14px;
+    color: #1e293b;
+    outline: none;
+}
+
+.dark input, .dark select {
+    background: #0f172a;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+/* Melhoria no Calendário Dark */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7); /* Torna o ícone cinza/claro */
+    cursor: pointer;
+}
+
+/* Custom Select Arrow */
+.select-wrapper { position: relative; }
+.select-wrapper::after {
+    content: "▼";
+    font-size: 10px;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #94a3b8;
+}
+select { appearance: none; padding-right: 30px; }
+
+/* Botões */
+.main-btn {
+    width: 100%;
+    background: #2563eb;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-top: 24px;
+    cursor: pointer;
+}
+
+.email-section { margin-top: 24px; }
+
+/* History Section */
+.history { margin-top: 40px; }
+.history-header { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+.dark .history-header { border-color: #334155; }
+
+.clear-btn {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
+    padding: 4px 12px;
+    width: auto;
+    font-size: 12px;
+    margin: 0;
+}
+.dark .clear-btn { border-color: #7f1d1d; }
+
+.history-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+}
+.dark .history-item { border-color: #1e293b; }

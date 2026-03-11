@@ -1,429 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Flight Price Alerts</title>
-
-<script src="airports.js"></script>
-
-<style>
-
-*{
-box-sizing:border-box;
-font-family:system-ui;
-}
-
-body{
-margin:0;
-background:#f5f7fb;
-color:#111;
-transition:0.3s;
-}
-
-.dark{
-background:#0f172a;
-color:#e5e7eb;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:40px 20px;
-}
-
-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:30px;
-}
-
-.toggle{
-cursor:pointer;
-padding:8px 14px;
-border-radius:20px;
-border:1px solid #ddd;
-background:white;
-}
-
-.dark .toggle{
-background:#1e293b;
-color:white;
-border:1px solid #374151;
-}
-
-.card{
-background:white;
-padding:30px;
-border-radius:12px;
-box-shadow:0 10px 30px rgba(0,0,0,0.08);
-}
-
-.dark .card{
-background:#1e293b;
-}
-
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
-
-label{
-font-size:13px;
-font-weight:600;
-display:block;
-margin-bottom:5px;
-}
-
-input,select{
-width:100%;
-padding:12px;
-border-radius:8px;
-border:1px solid #ddd;
-font-size:14px;
-color:#6b7280;
-}
-
-.dark input,.dark select{
-background:#0f172a;
-border:1px solid #374151;
-color:white;
-color:#6b7280;
-}
-
-button{
-margin-top:20px;
-width:100%;
-padding:14px;
-border:none;
-border-radius:8px;
-font-size:16px;
-background:#2563eb;
-color:white;
-cursor:pointer;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.autocomplete{
-position:relative;
-}
-
-.suggestions{
-position:absolute;
-background:white;
-border:1px solid #ddd;
-border-radius:8px;
-top:100%;
-margin-top:6px;
-left:0;
-right:0;
-max-height:200px;
-overflow:auto;
-display:none;
-z-index:10;
-}
-
-.dark .suggestions{
-background:#1e293b;
-border:1px solid #374151;
-}
-
-.suggestions div{
-padding:10px;
-cursor:pointer;
-}
-
-.suggestions div:hover{
-background:#f1f5f9;
-}
-
-.dark .suggestions div:hover{
-background:#334155;
-}
-
-.history{
-margin-top:30px;
-}
-
-.history-item{
-padding:10px;
-border-bottom:1px solid #eee;
-font-size:14px;
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button{
-opacity:0.4;
-background:transparent;
-border-radius:4px;
-cursor:pointer;
-}
-
-input[type="number"]::-webkit-inner-spin-button:hover,
-input[type="number"]::-webkit-outer-spin-button:hover{
-background:#e5e7eb;
-opacity:1;
-}
-
-.dark input[type="number"]::-webkit-inner-spin-button,
-.dark input[type="number"]::-webkit-outer-spin-button{
-filter:invert(1);
-}
-
-.dark input[type="number"]::-webkit-inner-spin-button:hover,
-.dark input[type="number"]::-webkit-outer-spin-button:hover{
-background:#374151;
-}
-
-.dark .history-item{
-border-bottom:1px solid #374151;
-}
-
-input:focus,select:focus{
-outline:none;
-border:1px solid #2563eb;
-box-shadow:0 0 0 2px rgba(37,99,235,0.15);
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Price Alerts</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
-
-<div class="container">
-
-<header>
-
-<h2>Flight Price Alerts</h2>
-
-<div id="themeToggle" class="toggle" onclick="toggleTheme()">
-Dark Mode
-</div>
-
-</header>
-
-<div class="card">
-
-<div class="grid">
-
-<div class="autocomplete">
-<label>Origin</label>
-<input id="origin">
-<div id="origin-list" class="suggestions"></div>
-</div>
-
-<div style="display:flex;align-items:end;justify-content:center">
-<button type="button" onclick="swapAirports()" style="width:auto;padding:10px 14px;margin:0">
-⇄
-</button>
-</div>
-
-<div class="autocomplete">
-<label>Destination</label>
-<input id="destination">
-<div id="destination-list" class="suggestions"></div>
-</div>
-
-<div>
-<label>Trip Type</label>
-<select id="tripType" onchange="toggleReturn()">
-<option value="round">Round Trip</option>
-<option value="oneway">One Way</option>
-</select>
-</div>
-
-<div>
-<label>Max Price</label>
-<input type="number" id="price">
-</div>
-
-<div>
-<label>Departure Date</label>
-<input type="date" id="departure">
-</div>
-
-<div id="returnContainer">
-<label>Return Date</label>
-<input type="date" id="returnDate">
-</div>
-
-</div>
-
-<label style="margin-top:20px">Email</label>
-<input id="email" placeholder="example@email.com">
-
-<button onclick="createAlert()">Create Alert</button>
-
-</div>
-
-<div class="history">
-
-<h3 style="display:flex;justify-content:space-between;align-items:center">
-
-<span>Alert History</span>
-
-<button onclick="clearHistory()" style="width:auto;padding:6px 12px;font-size:13px;background:#ef4444">
-Clear
-</button>
-
-</h3>
-
-<div id="historyList"></div>
-
-</div>
-
-</div>
-
-<script>
-
-function toggleTheme(){
-
-document.body.classList.toggle("dark")
-
-const toggle=document.getElementById("themeToggle")
-
-if(document.body.classList.contains("dark")){
-toggle.innerText="Light Mode"
-}else{
-toggle.innerText="Dark Mode"
-}
-
-}
-
-function toggleReturn(){
-
-const trip=document.getElementById("tripType").value
-const container=document.getElementById("returnContainer")
-
-container.style.display=trip==="oneway"?"none":"block"
-
-}
-
-function autocomplete(inputId,listId){
-
-const input=document.getElementById(inputId)
-const list=document.getElementById(listId)
-
-input.addEventListener("input",()=>{
-
-const value=input.value.toLowerCase()
-
-list.innerHTML=""
-
-if(value.length<1){
-list.style.display="none"
-return
-}
-
-const results=airports.filter(a=>
-a.city.toLowerCase().includes(value) ||
-a.country.toLowerCase().includes(value) ||
-a.code.toLowerCase().includes(value) ||
-a.name.toLowerCase().includes(value)
-)
-
-results.slice(0,20).forEach(a=>{
-
-const div=document.createElement("div")
-
-div.innerText=`${a.city}, ${a.country} (${a.code})`
-
-div.onclick=()=>{
-input.value=`${a.city}, ${a.country} (${a.code})`
-list.style.display="none"
-}
-
-list.appendChild(div)
-
-})
-
-list.style.display="block"
-
-})
-
-}
-
-autocomplete("origin","origin-list")
-autocomplete("destination","destination-list")
-
-function createAlert(){
-
-const alertData={
-
-origin:origin.value,
-destination:destination.value,
-tripType:tripType.value,
-departure:departure.value,
-returnDate:returnDate.value,
-price:price.value,
-email:email.value
-
-}
-
-let alerts=JSON.parse(localStorage.getItem("alerts")||"[]")
-
-alerts.push(alertData)
-
-localStorage.setItem("alerts",JSON.stringify(alerts))
-
-renderHistory()
-
-}
-
-function renderHistory(){
-
-const list=document.getElementById("historyList")
-
-list.innerHTML=""
-
-let alerts=JSON.parse(localStorage.getItem("alerts")||"[]")
-
-alerts.forEach(a=>{
-
-const div=document.createElement("div")
-
-div.className="history-item"
-
-div.innerText=`${a.origin} → ${a.destination} | ${a.departure}`
-
-list.appendChild(div)
-
-})
-
-}
-
-renderHistory()
-
-function swapAirports(){
-
-const origin=document.getElementById("origin")
-const destination=document.getElementById("destination")
-
-const temp=origin.value
-origin.value=destination.value
-destination.value=temp
-
-}
-
-function clearHistory(){
-
-localStorage.removeItem("alerts")
-
-renderHistory()
-
-}
-
-</script>
-
+    <div class="container">
+        <header>
+            <h2>Flight Price Alerts</h2>
+            <div id="themeToggle" class="toggle">Dark Mode</div>
+        </header>
+
+        <div class="card">
+            <div class="grid">
+                <div class="route-container">
+                    <div class="autocomplete">
+                        <label>Origin</label>
+                        <input id="origin" placeholder="Where from?">
+                        <div id="origin-list" class="suggestions"></div>
+                    </div>
+                    
+                    <button type="button" id="swapBtn" title="Swap Locations">⇄</button>
+
+                    <div class="autocomplete">
+                        <label>Destination</label>
+                        <input id="destination" placeholder="Where to?">
+                        <div id="destination-list" class="suggestions"></div>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Trip Type</label>
+                    <div class="select-wrapper">
+                        <select id="tripType">
+                            <option value="round">Round Trip</option>
+                            <option value="oneway">One Way</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Max Price</label>
+                    <input type="number" id="price" placeholder="0.00">
+                </div>
+
+                <div class="field-group">
+                    <label>Departure Date</label>
+                    <input type="date" id="departure">
+                </div>
+
+                <div id="returnContainer" class="field-group">
+                    <label>Return Date</label>
+                    <input type="date" id="returnDate">
+                </div>
+            </div>
+
+            <div class="email-section">
+                <label>Email Address</label>
+                <input id="email" type="email" placeholder="example@email.com">
+            </div>
+
+            <button id="createAlertBtn" class="main-btn">Create Alert</button>
+        </div>
+
+        <div class="history">
+            <h3 class="history-header">
+                <span>Alert History</span>
+                <button id="clearHistoryBtn" class="clear-btn">Clear All</button>
+            </h3>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script src="airports.js"></script>
+    <script src="js/script.js"></script>
 </body>
-
 </html>
