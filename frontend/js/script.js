@@ -1,14 +1,46 @@
-// --- Atribuição de Eventos ---
-document.getElementById("themeToggle").onclick = toggleTheme;
-document.getElementById("tripType").onchange = toggleReturn;
-document.getElementById("swapBtn").onclick = swapAirports;
-document.getElementById("createAlertBtn").onclick = createAlert;
-document.getElementById("clearHistoryBtn").onclick = clearHistory;
+/**
+ * UI Element Selectors
+ */
+const elements = {
+    themeToggle: document.getElementById("themeToggle"),
+    tripType: document.getElementById("tripType"),
+    swapBtn: document.getElementById("swapBtn"),
+    createBtn: document.getElementById("createAlertBtn"),
+    clearBtn: document.getElementById("clearHistoryBtn"),
+    returnContainer: document.getElementById("returnContainer"),
+    departure: document.getElementById("departure"),
+    returnDate: document.getElementById("returnDate"),
+    historyList: document.getElementById("historyList"),
+    allInputs: document.querySelectorAll('input, select')
+};
 
-// --- Gerenciamento de Cores (Placeholder Dinâmico) ---
-const allInputs = document.querySelectorAll('input, select');
+// --- Initialization ---
 
-function handleColorChange(el) {
+// Event Listeners
+elements.themeToggle.onclick = toggleTheme;
+elements.tripType.onchange = handleTripTypeChange;
+elements.swapBtn.onclick = swapAirports;
+elements.createBtn.onclick = createAlert;
+elements.clearBtn.onclick = clearHistory;
+
+// Date Validation: Prevent return date from being before departure
+elements.departure.addEventListener('change', (e) => {
+    elements.returnDate.min = e.target.value;
+});
+
+// Input styling logic
+elements.allInputs.forEach(input => {
+    updateInputState(input);
+    input.addEventListener('input', () => updateInputState(input));
+    input.addEventListener('change', () => updateInputState(input));
+});
+
+// --- Logic Functions ---
+
+/**
+ * Updates CSS class if input has a value
+ */
+function updateInputState(el) {
     if (el.value && el.value !== "") {
         el.classList.add('has-value');
     } else {
@@ -16,49 +48,47 @@ function handleColorChange(el) {
     }
 }
 
-// Inicializa a escuta de eventos para todos os inputs e selects
-allInputs.forEach(input => {
-    // Verifica ao carregar (para campos pré-preenchidos pelo navegador)
-    handleColorChange(input);
-
-    // Verifica ao mudar ou digitar
-    input.addEventListener('change', () => handleColorChange(input));
-    input.addEventListener('input', () => handleColorChange(input));
-});
-
-// --- Funções de Interface ---
+/**
+ * Toggles Between Light and Dark Mode
+ */
 function toggleTheme() {
     document.body.classList.toggle("dark");
-    const toggle = document.getElementById("themeToggle");
     const isDark = document.body.classList.contains("dark");
-    toggle.innerText = isDark ? "Light Mode" : "Dark Mode";
+    elements.themeToggle.innerText = isDark ? "Light Mode" : "Dark Mode";
 }
 
-function toggleReturn() {
-    const trip = document.getElementById("tripType").value;
-    const container = document.getElementById("returnContainer");
+/**
+ * Handles UI changes when switching between Round Trip and One Way
+ */
+function handleTripTypeChange() {
+    const isOneWay = elements.tripType.value === "oneway";
+    elements.returnContainer.style.opacity = isOneWay ? "0.3" : "1";
+    elements.returnContainer.style.pointerEvents = isOneWay ? "none" : "all";
     
-    // UI Feedback para One Way
-    container.style.opacity = trip === "oneway" ? "0.3" : "1";
-    container.style.pointerEvents = trip === "oneway" ? "none" : "all";
-    
-    handleColorChange(document.getElementById("tripType"));
+    if (isOneWay) {
+        elements.returnDate.value = "";
+        updateInputState(elements.returnDate);
+    }
+    updateInputState(elements.tripType);
 }
 
+/**
+ * Swaps Origin and Destination values
+ */
 function swapAirports() {
     const origin = document.getElementById("origin");
     const destination = document.getElementById("destination");
     
-    // Troca os valores
     [origin.value, destination.value] = [destination.value, origin.value];
     
-    // Atualiza as cores após a troca
-    handleColorChange(origin);
-    handleColorChange(destination);
+    updateInputState(origin);
+    updateInputState(destination);
 }
 
-// --- Autocomplete com Estilo de Balões ---
-function autocomplete(inputId, listId) {
+/**
+ * Autocomplete Logic
+ */
+function setupAutocomplete(inputId, listId) {
     const input = document.getElementById(inputId);
     const list = document.getElementById(listId);
 
@@ -73,80 +103,107 @@ function autocomplete(inputId, listId) {
 
         const results = airports.filter(a =>
             a.city.toLowerCase().includes(value) ||
-            a.country.toLowerCase().includes(value) ||
             a.code.toLowerCase().includes(value)
         );
 
-        results.slice(0, 6).forEach(a => {
+        results.slice(0, 5).forEach(a => {
             const div = document.createElement("div");
-            // Texto compacto para o balão
             div.innerText = `${a.city} (${a.code})`; 
-            
             div.onclick = () => {
-                input.value = `${a.city}, ${a.country} (${a.code})`;
+                input.value = `${a.city} (${a.code})`;
                 list.style.display = "none";
-                // Muda a cor do texto ao selecionar do balão
-                handleColorChange(input);
+                updateInputState(input);
             };
             list.appendChild(div);
         });
-        list.style.display = "block";
+        list.style.display = "flex";
     });
 
-    // Fecha a lista ao clicar fora
     document.addEventListener("click", (e) => {
         if (e.target !== input) list.style.display = "none";
     });
 }
 
-autocomplete("origin", "origin-list");
-autocomplete("destination", "destination-list");
+setupAutocomplete("origin", "origin-list");
+setupAutocomplete("destination", "destination-list");
 
-// --- Persistência de Dados (LocalStorage) ---
+/**
+ * Data Persistence
+ */
 function createAlert() {
-    const alertData = {
+    const data = {
         origin: document.getElementById("origin").value,
         destination: document.getElementById("destination").value,
-        tripType: document.getElementById("tripType").value,
-        departure: document.getElementById("departure").value,
-        returnDate: document.getElementById("returnDate").value,
+        tripType: elements.tripType.value,
+        departure: elements.departure.value,
+        returnDate: elements.returnDate.value,
         price: document.getElementById("price").value,
-        email: document.getElementById("email").value
+        currency: document.getElementById("currency").value,
+        email: document.getElementById("email").value,
+        id: Date.now()
     };
 
-    if (!alertData.origin || !alertData.email) {
-        alert("Please fill in the required fields (Origin and Email).");
+    // Simple validation
+    if (!data.origin || !data.destination || !data.email || !data.departure) {
+        document.getElementById("inputCard").classList.add("shake");
+        setTimeout(() => document.getElementById("inputCard").classList.remove("shake"), 500);
+        alert("Please fill in Origin, Destination, Departure and Email.");
         return;
     }
 
-    let alerts = JSON.parse(localStorage.getItem("alerts") || "[]");
-    alerts.push(alertData);
-    localStorage.setItem("alerts", JSON.stringify(alerts));
+    let alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
+    alerts.push(data);
+    localStorage.setItem("flight_alerts", JSON.stringify(alerts));
     
     renderHistory();
 }
 
+/**
+ * Renders the list of alerts from LocalStorage
+ */
 function renderHistory() {
-    const list = document.getElementById("historyList");
-    list.innerHTML = "";
-    let alerts = JSON.parse(localStorage.getItem("alerts") || "[]");
+    elements.historyList.innerHTML = "";
+    let alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
 
-    // Mostra os alertas mais recentes no topo
+    if (alerts.length === 0) {
+        elements.historyList.innerHTML = "<p class='empty-msg'>No alerts created yet.</p>";
+        return;
+    }
+
     alerts.reverse().forEach(a => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.innerHTML = `<strong>${a.origin} ⇄ ${a.destination}</strong><br>
-                         <small>${a.departure} | Max: $${a.price || 'N/A'}</small>`;
-        list.appendChild(div);
+        const item = document.createElement("div");
+        item.className = "history-item";
+        
+        const isOneWay = a.tripType === "oneway";
+        const arrow = isOneWay ? " → " : " ⇄ ";
+        const priceDisplay = a.price ? `${a.currency} ${a.price}` : 'No limit';
+        
+        // Dynamic date string
+        let dateRange = a.departure;
+        if (!isOneWay && a.returnDate) {
+            dateRange += ` to ${a.returnDate}`;
+        }
+
+        item.innerHTML = `
+            <div class="item-main">
+                <span class="route">${a.origin}${arrow}${a.destination}</span>
+                <span class="price-tag">${priceDisplay}</span>
+            </div>
+            <div class="item-footer">
+                <small>${dateRange}</small>
+                <small class="trip-badge">${a.tripType}</small>
+            </div>
+        `;
+        elements.historyList.appendChild(item);
     });
 }
 
 function clearHistory() {
-    if(confirm("Are you sure you want to clear all flight alerts?")) {
-        localStorage.removeItem("alerts");
+    if(confirm("Delete all alerts?")) {
+        localStorage.removeItem("flight_alerts");
         renderHistory();
     }
 }
 
-// Inicializa o histórico ao abrir a página
+// Initial Render
 renderHistory();
