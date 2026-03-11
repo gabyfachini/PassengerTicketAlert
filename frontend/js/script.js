@@ -1,10 +1,32 @@
-// Atribuição de eventos simplificada
+// --- Atribuição de Eventos ---
 document.getElementById("themeToggle").onclick = toggleTheme;
 document.getElementById("tripType").onchange = toggleReturn;
 document.getElementById("swapBtn").onclick = swapAirports;
 document.getElementById("createAlertBtn").onclick = createAlert;
 document.getElementById("clearHistoryBtn").onclick = clearHistory;
 
+// --- Gerenciamento de Cores (Placeholder Dinâmico) ---
+const allInputs = document.querySelectorAll('input, select');
+
+function handleColorChange(el) {
+    if (el.value && el.value !== "") {
+        el.classList.add('has-value');
+    } else {
+        el.classList.remove('has-value');
+    }
+}
+
+// Inicializa a escuta de eventos para todos os inputs e selects
+allInputs.forEach(input => {
+    // Verifica ao carregar (para campos pré-preenchidos pelo navegador)
+    handleColorChange(input);
+
+    // Verifica ao mudar ou digitar
+    input.addEventListener('change', () => handleColorChange(input));
+    input.addEventListener('input', () => handleColorChange(input));
+});
+
+// --- Funções de Interface ---
 function toggleTheme() {
     document.body.classList.toggle("dark");
     const toggle = document.getElementById("themeToggle");
@@ -15,16 +37,27 @@ function toggleTheme() {
 function toggleReturn() {
     const trip = document.getElementById("tripType").value;
     const container = document.getElementById("returnContainer");
+    
+    // UI Feedback para One Way
     container.style.opacity = trip === "oneway" ? "0.3" : "1";
     container.style.pointerEvents = trip === "oneway" ? "none" : "all";
+    
+    handleColorChange(document.getElementById("tripType"));
 }
 
 function swapAirports() {
     const origin = document.getElementById("origin");
     const destination = document.getElementById("destination");
+    
+    // Troca os valores
     [origin.value, destination.value] = [destination.value, origin.value];
+    
+    // Atualiza as cores após a troca
+    handleColorChange(origin);
+    handleColorChange(destination);
 }
 
+// --- Autocomplete com Estilo de Balões ---
 function autocomplete(inputId, listId) {
     const input = document.getElementById(inputId);
     const list = document.getElementById(listId);
@@ -44,12 +77,16 @@ function autocomplete(inputId, listId) {
             a.code.toLowerCase().includes(value)
         );
 
-        results.slice(0, 8).forEach(a => {
+        results.slice(0, 6).forEach(a => {
             const div = document.createElement("div");
-            div.innerText = `${a.city}, ${a.country} (${a.code})`;
+            // Texto compacto para o balão
+            div.innerText = `${a.city} (${a.code})`; 
+            
             div.onclick = () => {
                 input.value = `${a.city}, ${a.country} (${a.code})`;
                 list.style.display = "none";
+                // Muda a cor do texto ao selecionar do balão
+                handleColorChange(input);
             };
             list.appendChild(div);
         });
@@ -65,6 +102,7 @@ function autocomplete(inputId, listId) {
 autocomplete("origin", "origin-list");
 autocomplete("destination", "destination-list");
 
+// --- Persistência de Dados (LocalStorage) ---
 function createAlert() {
     const alertData = {
         origin: document.getElementById("origin").value,
@@ -77,13 +115,14 @@ function createAlert() {
     };
 
     if (!alertData.origin || !alertData.email) {
-        alert("Please fill in the required fields.");
+        alert("Please fill in the required fields (Origin and Email).");
         return;
     }
 
     let alerts = JSON.parse(localStorage.getItem("alerts") || "[]");
     alerts.push(alertData);
     localStorage.setItem("alerts", JSON.stringify(alerts));
+    
     renderHistory();
 }
 
@@ -92,20 +131,22 @@ function renderHistory() {
     list.innerHTML = "";
     let alerts = JSON.parse(localStorage.getItem("alerts") || "[]");
 
-    alerts.reverse().forEach(a => { // Mais recentes primeiro
+    // Mostra os alertas mais recentes no topo
+    alerts.reverse().forEach(a => {
         const div = document.createElement("div");
         div.className = "history-item";
         div.innerHTML = `<strong>${a.origin} ⇄ ${a.destination}</strong><br>
-                         <small>${a.departure} | Max: $${a.price}</small>`;
+                         <small>${a.departure} | Max: $${a.price || 'N/A'}</small>`;
         list.appendChild(div);
     });
 }
 
 function clearHistory() {
-    if(confirm("Clear all alerts?")) {
+    if(confirm("Are you sure you want to clear all flight alerts?")) {
         localStorage.removeItem("alerts");
         renderHistory();
     }
 }
 
+// Inicializa o histórico ao abrir a página
 renderHistory();

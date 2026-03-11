@@ -16,6 +16,46 @@ body.dark {
 
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 
+/* --- Sugestões estilo "Balões" --- */
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 8px;
+    z-index: 10;
+    width: auto;
+    max-width: 100%;
+}
+
+.suggestions div {
+    display: inline-flex;
+    align-items: center;
+    background: #2563eb;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.suggestions div:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.dark .suggestions div {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+/* --- UI Elements --- */
 .toggle {
     cursor: pointer;
     padding: 8px 16px;
@@ -37,10 +77,8 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 
 .dark .card { background: #1e293b; box-shadow: none; }
 
-/* Grid e Layout */
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
-/* Route Container para o Swap */
 .route-container {
     grid-column: span 2;
     display: flex;
@@ -54,7 +92,7 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 #swapBtn {
     width: 40px;
     height: 40px;
-    margin-top: 20px; /* Alinha com os inputs ignorando o label */
+    margin-top: 20px;
     border-radius: 50%;
     background: #f1f5f9;
     color: #2563eb;
@@ -68,10 +106,9 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 }
 
 #swapBtn:hover { transform: rotate(180deg); background: #e2e8f0; }
-
 .dark #swapBtn { background: #334155; border-color: #475569; color: #60a5fa; }
 
-/* Inputs e Selects */
+/* --- Inputs, Selects e Cores dinâmicas --- */
 label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #64748b; }
 .dark label { color: #94a3b8; }
 
@@ -82,21 +119,46 @@ input, select {
     border: 1px solid #e2e8f0;
     background: #fff;
     font-size: 14px;
-    color: #1e293b;
     outline: none;
+    transition: 0.2s;
+    /* Cor padrão (Placeholder/Vazio) */
+    color: #94a3b8; 
 }
 
+/* Dark Mode cor padrão (Vazio) */
 .dark input, .dark select {
     background: #0f172a;
     border-color: #334155;
+    color: #64748b; /* Cinza um pouco mais escuro para o estado vazio no dark */
+}
+
+/* Estado Preenchido (Light Mode) */
+input.has-value, select.has-value {
+    color: #1e293b;
+}
+
+/* Estado Preenchido (Dark Mode) */
+.dark input.has-value, .dark select.has-value {
     color: #cbd5e1;
 }
 
-/* Melhoria no Calendário Dark */
+/* Cor do placeholder específico para inputs de texto */
+input::placeholder { color: #94a3b8; }
+.dark input::placeholder { color: #64748b; }
+
+/* Melhoria no Calendário e Spinners */
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.7); /* Torna o ícone cinza/claro */
+    filter: invert(0.7);
     cursor: pointer;
 }
+
+.dark input[type="number"]::-webkit-inner-spin-button,
+.dark input[type="number"]::-webkit-outer-spin-button {
+    filter: invert(1) brightness(0.7);
+    cursor: pointer;
+}
+
+.dark input[type="number"] { color-scheme: dark; }
 
 /* Custom Select Arrow */
 .select-wrapper { position: relative; }
@@ -112,7 +174,7 @@ input, select {
 }
 select { appearance: none; padding-right: 30px; }
 
-/* Botões */
+/* --- Botões e Histórico --- */
 .main-btn {
     width: 100%;
     background: #2563eb;
@@ -127,7 +189,6 @@ select { appearance: none; padding-right: 30px; }
 
 .email-section { margin-top: 24px; }
 
-/* History Section */
 .history { margin-top: 40px; }
 .history-header { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
 .dark .history-header { border-color: #334155; }
@@ -135,13 +196,18 @@ select { appearance: none; padding-right: 30px; }
 .clear-btn {
     background: transparent;
     color: #ef4444;
-    border: 1px solid #fee2e2;
-    padding: 4px 12px;
+    border: 1px solid #ef4444;
+    padding: 8px 16px;
     width: auto;
-    font-size: 12px;
-    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
 }
-.dark .clear-btn { border-color: #7f1d1d; }
+
+.clear-btn:hover { background: #fef2f2; }
+.dark .clear-btn:hover { background: #450a0a; }
 
 .history-item {
     padding: 12px 0;
