@@ -1,8 +1,22 @@
 const airports = [
-{ city:"São Paulo", country:"Brazil", code:"GRU", name:"Guarulhos International Airport" },
-{ city:"Rio de Janeiro", country:"Brazil", code:"GIG", name:"Galeão International Airport" },
+{ city:"São Paulo", country:"Brazil", code:"GRU", name:"São Paulo–Guarulhos International Airport" },
+{ city:"Rio de Janeiro", country:"Brazil", code:"GIG", name:"Rio de Janeiro–Galeão International Airport" },
+{ city:"Campinas", country:"Brazil", code:"VCP", name:"Viracopos International Airport" },
 { city:"Lisbon", country:"Portugal", code:"LIS", name:"Humberto Delgado Airport" },
+{ city:"Porto", country:"Portugal", code:"OPO", name:"Francisco Sá Carneiro Airport" },
 { city:"Paris", country:"France", code:"CDG", name:"Charles de Gaulle Airport" },
+{ city:"Paris", country:"France", code:"ORY", name:"Orly Airport" },
+{ city:"London", country:"United Kingdom", code:"LHR", name:"Heathrow Airport" },
+{ city:"London", country:"United Kingdom", code:"LGW", name:"Gatwick Airport" },
+{ city:"London", country:"United Kingdom", code:"STN", name:"Stansted Airport" },
+{ city:"Madrid", country:"Spain", code:"MAD", name:"Adolfo Suárez Madrid–Barajas Airport" },
+{ city:"Barcelona", country:"Spain", code:"BCN", name:"Barcelona–El Prat Airport" },
 { city:"New York", country:"United States", code:"JFK", name:"John F. Kennedy International Airport" },
-{ city:"London", country:"United Kingdom", code:"LHR", name:"Heathrow Airport" }
+{ city:"New York", country:"United States", code:"LGA", name:"LaGuardia Airport" },
+{ city:"Newark", country:"United States", code:"EWR", name:"Newark Liberty International Airport" },
+{ city:"Los Angeles", country:"United States", code:"LAX", name:"Los Angeles International Airport" },
+{ city:"Chicago", country:"United States", code:"ORD", name:"O'Hare International Airport" },
+{ city:"Tokyo", country:"Japan", code:"HND", name:"Tokyo Haneda Airport" },
+{ city:"Tokyo", country:"Japan", code:"NRT", name:"Narita International Airport" },
+{ city:"Dubai", country:"United Arab Emirates", code:"DXB", name:"Dubai International Airport" }
 ];

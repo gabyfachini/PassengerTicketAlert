@@ -86,12 +86,14 @@ padding:12px;
 border-radius:8px;
 border:1px solid #ddd;
 font-size:14px;
+color:#6b7280;
 }
 
 .dark input,.dark select{
 background:#0f172a;
 border:1px solid #374151;
 color:white;
+color:#6b7280;
 }
 
 button{
@@ -119,7 +121,8 @@ position:absolute;
 background:white;
 border:1px solid #ddd;
 border-radius:8px;
-top:45px;
+top:100%;
+margin-top:6px;
 left:0;
 right:0;
 max-height:200px;
@@ -156,8 +159,38 @@ border-bottom:1px solid #eee;
 font-size:14px;
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button{
+opacity:0.4;
+background:transparent;
+border-radius:4px;
+cursor:pointer;
+}
+
+input[type="number"]::-webkit-inner-spin-button:hover,
+input[type="number"]::-webkit-outer-spin-button:hover{
+background:#e5e7eb;
+opacity:1;
+}
+
+.dark input[type="number"]::-webkit-inner-spin-button,
+.dark input[type="number"]::-webkit-outer-spin-button{
+filter:invert(1);
+}
+
+.dark input[type="number"]::-webkit-inner-spin-button:hover,
+.dark input[type="number"]::-webkit-outer-spin-button:hover{
+background:#374151;
+}
+
 .dark .history-item{
 border-bottom:1px solid #374151;
+}
+
+input:focus,select:focus{
+outline:none;
+border:1px solid #2563eb;
+box-shadow:0 0 0 2px rgba(37,99,235,0.15);
 }
 
 </style>
@@ -186,6 +219,12 @@ Dark Mode
 <label>Origin</label>
 <input id="origin">
 <div id="origin-list" class="suggestions"></div>
+</div>
+
+<div style="display:flex;align-items:end;justify-content:center">
+<button type="button" onclick="swapAirports()" style="width:auto;padding:10px 14px;margin:0">
+⇄
+</button>
 </div>
 
 <div class="autocomplete">
@@ -220,7 +259,7 @@ Dark Mode
 </div>
 
 <label style="margin-top:20px">Email</label>
-<input id="email">
+<input id="email" placeholder="example@email.com">
 
 <button onclick="createAlert()">Create Alert</button>
 
@@ -228,7 +267,15 @@ Dark Mode
 
 <div class="history">
 
-<h3>Alert History</h3>
+<h3 style="display:flex;justify-content:space-between;align-items:center">
+
+<span>Alert History</span>
+
+<button onclick="clearHistory()" style="width:auto;padding:6px 12px;font-size:13px;background:#ef4444">
+Clear
+</button>
+
+</h3>
 
 <div id="historyList"></div>
 
@@ -288,10 +335,10 @@ results.slice(0,20).forEach(a=>{
 
 const div=document.createElement("div")
 
-div.innerText=`${a.city} - ${a.code} (${a.country})`
+div.innerText=`${a.city}, ${a.country} (${a.code})`
 
 div.onclick=()=>{
-input.value=a.code
+input.value=`${a.city}, ${a.country} (${a.code})`
 list.style.display="none"
 }
 
@@ -355,6 +402,25 @@ list.appendChild(div)
 }
 
 renderHistory()
+
+function swapAirports(){
+
+const origin=document.getElementById("origin")
+const destination=document.getElementById("destination")
+
+const temp=origin.value
+origin.value=destination.value
+destination.value=temp
+
+}
+
+function clearHistory(){
+
+localStorage.removeItem("alerts")
+
+renderHistory()
+
+}
 
 </script>
 
