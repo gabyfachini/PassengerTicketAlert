@@ -5,48 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Price Alerts</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
             <div class="brand">
-                <h2>Flight Price Alerts</h2>
-                <p>Track your dream destinations</p>
+                <div class="brand-icon">✈</div>
+                <div class="brand-text">
+                    <h2>Flight Alerts</h2>
+                    <p>Track your dream destinations</p>
+                </div>
             </div>
-            <button id="themeToggle" class="toggle-btn">Dark Mode</button>
+            <button id="themeToggle" class="toggle-btn">
+                <span class="theme-icon">🌙</span>
+                <span class="theme-label">Dark Mode</span>
+            </button>
         </header>
 
         <div class="card" id="inputCard">
             <div class="grid">
+
+                <!-- Route Row: spans full width -->
                 <div class="route-container">
                     <div class="autocomplete">
-                        <label for="origin">Origin</label>
-                        <input id="origin" placeholder="City or Airport" autocomplete="off">
+                        <label for="origin">From</label>
+                        <input id="origin" placeholder="City or airport code" autocomplete="off">
                         <div id="origin-list" class="suggestions"></div>
                     </div>
-                    
-                    <button type="button" id="swapBtn" title="Swap Locations">⇄</button>
+
+                    <button type="button" id="swapBtn" title="Swap airports">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3L4 7l4 4"/><path d="M4 7h16"/>
+                            <path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>
+                        </svg>
+                    </button>
 
                     <div class="autocomplete">
-                        <label for="destination">Destination</label>
-                        <input id="destination" placeholder="City or Airport" autocomplete="off">
+                        <label for="destination">To</label>
+                        <input id="destination" placeholder="City or airport code" autocomplete="off">
                         <div id="destination-list" class="suggestions"></div>
                     </div>
                 </div>
 
+                <!-- Trip Type -->
                 <div class="field-group">
-                    <label>Trip Type</label>
+                    <label for="tripType">Trip Type</label>
                     <div class="select-wrapper">
                         <select id="tripType">
                             <option value="round">Round Trip</option>
                             <option value="oneway">One Way</option>
                         </select>
+                        <span class="select-arrow">▾</span>
                     </div>
                 </div>
 
+                <!-- Max Price -->
                 <div class="field-group">
-                    <label>Max Price</label>
+                    <label for="price">Max Price</label>
                     <div class="price-input-container">
                         <select id="currency">
                             <option value="USD">$ USD</option>
@@ -54,38 +70,48 @@
                             <option value="EUR">€ EUR</option>
                             <option value="GBP">£ GBP</option>
                         </select>
-                        <input type="number" id="price" placeholder="0.00" min="0">
+                        <input type="number" id="price" placeholder="Any" min="0">
                     </div>
                 </div>
 
+                <!-- Departure Date -->
                 <div class="field-group">
-                    <label>Departure Date</label>
+                    <label for="departure">Departure</label>
                     <input type="date" id="departure">
                 </div>
 
+                <!-- Return Date -->
                 <div id="returnContainer" class="field-group">
-                    <label>Return Date</label>
+                    <label for="returnDate">Return</label>
                     <input type="date" id="returnDate">
                 </div>
+
             </div>
 
+            <!-- Email -->
             <div class="email-section">
-                <label>Email Address</label>
-                <input id="email" type="email" placeholder="example@email.com">
+                <label for="email">Email for Notifications</label>
+                <input id="email" type="email" placeholder="you@example.com">
             </div>
 
-            <button id="createAlertBtn" class="main-btn">Create Alert</button>
+            <button id="createAlertBtn" class="main-btn">
+                <span>Create Alert</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
         </div>
 
+        <!-- History -->
         <div class="history">
             <div class="history-header">
                 <h3>Active Alerts</h3>
                 <button id="clearHistoryBtn" class="clear-btn">Clear All</button>
             </div>
-            <div id="historyList" class="history-grid">
-                </div>
+            <div id="historyList" class="history-grid"></div>
         </div>
     </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast" aria-live="polite"></div>
 
     <script src="airports.js"></script>
     <script src="js/script.js"></script>

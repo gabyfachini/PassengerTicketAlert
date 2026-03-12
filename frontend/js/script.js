@@ -1,99 +1,149 @@
 /**
- * UI Element Selectors
+ * ================================================
+ * FLIGHT PRICE ALERTS — script.js
+ * ================================================
  */
+
+// ------------------------------------------------
+// Element References
+// ------------------------------------------------
 const elements = {
-    themeToggle: document.getElementById("themeToggle"),
-    tripType: document.getElementById("tripType"),
-    swapBtn: document.getElementById("swapBtn"),
-    createBtn: document.getElementById("createAlertBtn"),
-    clearBtn: document.getElementById("clearHistoryBtn"),
-    returnContainer: document.getElementById("returnContainer"),
-    departure: document.getElementById("departure"),
-    returnDate: document.getElementById("returnDate"),
-    historyList: document.getElementById("historyList"),
-    allInputs: document.querySelectorAll('input, select')
+    themeToggle:    document.getElementById("themeToggle"),
+    themeLabel:     document.querySelector(".theme-label"),
+    themeIcon:      document.querySelector(".theme-icon"),
+    tripType:       document.getElementById("tripType"),
+    swapBtn:        document.getElementById("swapBtn"),
+    createBtn:      document.getElementById("createAlertBtn"),
+    clearBtn:       document.getElementById("clearHistoryBtn"),
+    returnContainer:document.getElementById("returnContainer"),
+    departure:      document.getElementById("departure"),
+    returnDate:     document.getElementById("returnDate"),
+    historyList:    document.getElementById("historyList"),
+    inputCard:      document.getElementById("inputCard"),
+    toast:          document.getElementById("toast"),
+    allInputs:      document.querySelectorAll("input, select"),
 };
 
-// --- Initialization ---
+// ------------------------------------------------
+// Initialization
+// ------------------------------------------------
+restoreTheme();
+renderHistory();
+setupAutocomplete("origin", "origin-list");
+setupAutocomplete("destination", "destination-list");
 
-// Event Listeners
-elements.themeToggle.onclick = toggleTheme;
-elements.tripType.onchange = handleTripTypeChange;
-elements.swapBtn.onclick = swapAirports;
-elements.createBtn.onclick = createAlert;
-elements.clearBtn.onclick = clearHistory;
+// Set today as the minimum departure date
+const todayStr = new Date().toISOString().split("T")[0];
+elements.departure.min = todayStr;
 
-// Date Validation: Prevent return date from being before departure
-elements.departure.addEventListener('change', (e) => {
+// Wire up events
+elements.themeToggle.addEventListener("click", toggleTheme);
+elements.tripType.addEventListener("change", handleTripTypeChange);
+elements.swapBtn.addEventListener("click", swapAirports);
+elements.createBtn.addEventListener("click", createAlert);
+elements.clearBtn.addEventListener("click", clearHistory);
+
+// FIX: Keep return date min in sync with departure
+elements.departure.addEventListener("change", (e) => {
     elements.returnDate.min = e.target.value;
+    // If return date is now before departure, reset it
+    if (elements.returnDate.value && elements.returnDate.value < e.target.value) {
+        elements.returnDate.value = "";
+        updateInputState(elements.returnDate);
+    }
 });
 
-// Input styling logic
-elements.allInputs.forEach(input => {
+// FIX: Input styling — track filled state on all inputs
+elements.allInputs.forEach((input) => {
     updateInputState(input);
-    input.addEventListener('input', () => updateInputState(input));
-    input.addEventListener('change', () => updateInputState(input));
+    input.addEventListener("input",  () => updateInputState(input));
+    input.addEventListener("change", () => updateInputState(input));
 });
 
-// --- Logic Functions ---
+// ------------------------------------------------
+// Theme
+// ------------------------------------------------
 
 /**
- * Updates CSS class if input has a value
+ * Persists and restores dark/light preference via localStorage
  */
-function updateInputState(el) {
-    if (el.value && el.value !== "") {
-        el.classList.add('has-value');
-    } else {
-        el.classList.remove('has-value');
+function restoreTheme() {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+        document.body.classList.add("dark");
+        updateThemeButton(true);
     }
 }
 
-/**
- * Toggles Between Light and Dark Mode
- */
 function toggleTheme() {
-    document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
-    elements.themeToggle.innerText = isDark ? "Light Mode" : "Dark Mode";
+    const isDark = document.body.classList.toggle("dark");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    updateThemeButton(isDark);
 }
 
+function updateThemeButton(isDark) {
+    if (elements.themeLabel) elements.themeLabel.textContent = isDark ? "Light Mode" : "Dark Mode";
+    if (elements.themeIcon)  elements.themeIcon.textContent  = isDark ? "☀️" : "🌙";
+}
+
+// ------------------------------------------------
+// Input State
+// ------------------------------------------------
+
 /**
- * Handles UI changes when switching between Round Trip and One Way
+ * Adds/removes .has-value class based on whether the input has content.
+ * This drives the "filled" border highlight in CSS.
  */
+function updateInputState(el) {
+    el.classList.toggle("has-value", Boolean(el.value && el.value !== ""));
+}
+
+// ------------------------------------------------
+// Trip Type Toggle
+// ------------------------------------------------
+
 function handleTripTypeChange() {
     const isOneWay = elements.tripType.value === "oneway";
-    elements.returnContainer.style.opacity = isOneWay ? "0.3" : "1";
-    elements.returnContainer.style.pointerEvents = isOneWay ? "none" : "all";
-    
+
+    // FIX: use a CSS class instead of inline styles for disabled state
+    elements.returnContainer.classList.toggle("disabled", isOneWay);
+
     if (isOneWay) {
         elements.returnDate.value = "";
         updateInputState(elements.returnDate);
     }
+
     updateInputState(elements.tripType);
 }
 
-/**
- * Swaps Origin and Destination values
- */
+// ------------------------------------------------
+// Swap Airports
+// ------------------------------------------------
+
 function swapAirports() {
-    const origin = document.getElementById("origin");
+    const origin      = document.getElementById("origin");
     const destination = document.getElementById("destination");
-    
+
     [origin.value, destination.value] = [destination.value, origin.value];
-    
+
     updateInputState(origin);
     updateInputState(destination);
 }
 
+// ------------------------------------------------
+// Autocomplete
+// ------------------------------------------------
+
 /**
- * Autocomplete Logic
+ * Attaches autocomplete behaviour to an input/list pair.
+ * Suggestions display city name + airport code in a readable dropdown.
  */
 function setupAutocomplete(inputId, listId) {
     const input = document.getElementById(inputId);
-    const list = document.getElementById(listId);
+    const list  = document.getElementById(listId);
 
     input.addEventListener("input", () => {
-        const value = input.value.toLowerCase();
+        const value = input.value.trim().toLowerCase();
         list.innerHTML = "";
 
         if (value.length < 1) {
@@ -101,109 +151,196 @@ function setupAutocomplete(inputId, listId) {
             return;
         }
 
-        const results = airports.filter(a =>
-            a.city.toLowerCase().includes(value) ||
-            a.code.toLowerCase().includes(value)
+        const results = airports.filter(
+            (a) =>
+                a.city.toLowerCase().includes(value) ||
+                a.code.toLowerCase().includes(value) ||
+                a.name.toLowerCase().includes(value)
         );
 
-        results.slice(0, 5).forEach(a => {
+        if (results.length === 0) {
+            list.style.display = "none";
+            return;
+        }
+
+        results.slice(0, 6).forEach((a) => {
             const div = document.createElement("div");
-            div.innerText = `${a.city} (${a.code})`; 
-            div.onclick = () => {
+            // FIX: separate city text and code for styled display
+            div.innerHTML = `<span>${a.city} — ${a.name.split(" ").slice(0, 3).join(" ")}</span><span class="code">${a.code}</span>`;
+            div.addEventListener("mousedown", (e) => {
+                // FIX: use mousedown so click doesn't blur the input first
+                e.preventDefault();
                 input.value = `${a.city} (${a.code})`;
                 list.style.display = "none";
                 updateInputState(input);
-            };
+                input.focus();
+            });
             list.appendChild(div);
         });
+
         list.style.display = "flex";
     });
 
-    document.addEventListener("click", (e) => {
-        if (e.target !== input) list.style.display = "none";
+    // FIX: close on blur rather than document click — more reliable
+    input.addEventListener("blur", () => {
+        setTimeout(() => (list.style.display = "none"), 150);
     });
 }
 
-setupAutocomplete("origin", "origin-list");
-setupAutocomplete("destination", "destination-list");
+// ------------------------------------------------
+// Create Alert
+// ------------------------------------------------
 
-/**
- * Data Persistence
- */
 function createAlert() {
     const data = {
-        origin: document.getElementById("origin").value,
-        destination: document.getElementById("destination").value,
-        tripType: elements.tripType.value,
-        departure: elements.departure.value,
+        origin:     document.getElementById("origin").value.trim(),
+        destination:document.getElementById("destination").value.trim(),
+        tripType:   elements.tripType.value,
+        departure:  elements.departure.value,
         returnDate: elements.returnDate.value,
-        price: document.getElementById("price").value,
-        currency: document.getElementById("currency").value,
-        email: document.getElementById("email").value,
-        id: Date.now()
+        price:      document.getElementById("price").value,
+        currency:   document.getElementById("currency").value,
+        email:      document.getElementById("email").value.trim(),
+        id:         Date.now(),
     };
 
-    // Simple validation
-    if (!data.origin || !data.destination || !data.email || !data.departure) {
-        document.getElementById("inputCard").classList.add("shake");
-        setTimeout(() => document.getElementById("inputCard").classList.remove("shake"), 500);
-        alert("Please fill in Origin, Destination, Departure and Email.");
+    // Validation
+    const missing = [];
+    if (!data.origin)      missing.push("origin");
+    if (!data.destination) missing.push("destination");
+    if (!data.departure)   missing.push("departure");
+    if (!data.email)       missing.push("email");
+
+    // FIX: highlight empty required fields individually
+    ["origin", "destination", "departure", "email"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el.value.trim()) {
+            el.classList.add("error");
+            el.addEventListener("input", () => el.classList.remove("error"), { once: true });
+        }
+    });
+
+    if (missing.length > 0) {
+        elements.inputCard.classList.add("shake");
+        setTimeout(() => elements.inputCard.classList.remove("shake"), 450);
+        showToast("Please fill in all required fields.", "error");
         return;
     }
 
-    let alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
+    // FIX: require return date if round trip
+    if (data.tripType === "round" && !data.returnDate) {
+        elements.returnDate.classList.add("error");
+        elements.returnDate.addEventListener("input", () => elements.returnDate.classList.remove("error"), { once: true });
+        elements.inputCard.classList.add("shake");
+        setTimeout(() => elements.inputCard.classList.remove("shake"), 450);
+        showToast("Please add a return date for round trips.", "error");
+        return;
+    }
+
+    // Email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+        document.getElementById("email").classList.add("error");
+        elements.inputCard.classList.add("shake");
+        setTimeout(() => elements.inputCard.classList.remove("shake"), 450);
+        showToast("Please enter a valid email address.", "error");
+        return;
+    }
+
+    // Save
+    const alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
     alerts.push(data);
     localStorage.setItem("flight_alerts", JSON.stringify(alerts));
-    
+
+    showToast("Alert created! ✓", "success");
     renderHistory();
 }
 
-/**
- * Renders the list of alerts from LocalStorage
- */
+// ------------------------------------------------
+// Render History
+// ------------------------------------------------
+
 function renderHistory() {
     elements.historyList.innerHTML = "";
-    let alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
+    const alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
 
     if (alerts.length === 0) {
-        elements.historyList.innerHTML = "<p class='empty-msg'>No alerts created yet.</p>";
+        elements.historyList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔔</div>
+                <p>No alerts yet. Create one above!</p>
+            </div>`;
         return;
     }
 
-    alerts.reverse().forEach(a => {
+    // Most recent first
+    [...alerts].reverse().forEach((a) => {
         const item = document.createElement("div");
         item.className = "history-item";
-        
-        const isOneWay = a.tripType === "oneway";
-        const arrow = isOneWay ? " → " : " ⇄ ";
-        const priceDisplay = a.price ? `${a.currency} ${a.price}` : 'No limit';
-        
-        // Dynamic date string
-        let dateRange = a.departure;
-        if (!isOneWay && a.returnDate) {
-            dateRange += ` to ${a.returnDate}`;
-        }
+
+        const isOneWay    = a.tripType === "oneway";
+        const arrow       = isOneWay ? "→" : "⇄";
+        const priceDisplay = a.price ? `${a.currency} ${Number(a.price).toLocaleString()}` : "Any price";
+        const dateRange   = isOneWay || !a.returnDate
+            ? formatDate(a.departure)
+            : `${formatDate(a.departure)} – ${formatDate(a.returnDate)}`;
 
         item.innerHTML = `
             <div class="item-main">
-                <span class="route">${a.origin}${arrow}${a.destination}</span>
+                <span class="route">${a.origin} ${arrow} ${a.destination}</span>
                 <span class="price-tag">${priceDisplay}</span>
             </div>
             <div class="item-footer">
                 <small>${dateRange}</small>
-                <small class="trip-badge">${a.tripType}</small>
-            </div>
-        `;
+                <span class="trip-badge">${isOneWay ? "One Way" : "Round Trip"}</span>
+            </div>`;
+
         elements.historyList.appendChild(item);
     });
 }
 
+// ------------------------------------------------
+// Clear History
+// ------------------------------------------------
+
 function clearHistory() {
-    if(confirm("Delete all alerts?")) {
+    if (confirm("Delete all flight alerts?")) {
         localStorage.removeItem("flight_alerts");
         renderHistory();
+        showToast("All alerts cleared.", "");
     }
 }
 
-// Initial Render
-renderHistory();
+// ------------------------------------------------
+// Utilities
+// ------------------------------------------------
+
+/**
+ * Formats an ISO date string (YYYY-MM-DD) to a readable format.
+ * e.g. "2024-08-15" → "Aug 15, 2024"
+ * FIX: avoids timezone offset issues by parsing manually
+ */
+function formatDate(str) {
+    if (!str) return "";
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+        month: "short",
+        day:   "numeric",
+        year:  "numeric",
+    });
+}
+
+/**
+ * Shows a transient toast notification.
+ * @param {string} message
+ * @param {"success"|"error"|""} type
+ */
+function showToast(message, type = "") {
+    const toast = elements.toast;
+    toast.textContent = message;
+    toast.className = `toast${type ? " " + type : ""} show`;
+
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
+}
