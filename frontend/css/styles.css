@@ -301,24 +301,30 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 #currency {
-    width: auto;
-    /* Narrow: just enough for the symbol */
-    min-width: 48px;
+    width: 52px;
     flex-shrink: 0;
     border: none;
     border-radius: 0;
-    /* Translucent background instead of solid grey */
-    background: transparent;
+    background: var(--card-bg);
     border-right: 1.5px solid var(--border);
     box-shadow: none !important;
-    appearance: none;
-    -webkit-appearance: none;
-    /* No extra padding — symbol is short */
-    padding: 10px 10px;
+    /* Keep native appearance: browser renders the dropdown list natively */
+    appearance: auto;
+    -webkit-appearance: auto;
+    padding: 10px 4px;
     cursor: pointer;
+    /* Center the visible selected value */
     text-align: center;
+    text-align-last: center;
     font-weight: 600;
     color: var(--primary);
+}
+
+/* Options: themed background + blue text to match the select */
+#currency option {
+    background: var(--card-bg);
+    color: var(--primary);
+    font-weight: 600;
 }
 
 #price {
