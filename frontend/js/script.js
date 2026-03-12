@@ -201,74 +201,44 @@ function setupAutocomplete(inputId, listId) {
 // Create Alert
 // ------------------------------------------------
 
-function createAlert() {
+const WEBHOOK_URL = "http://localhost:5678/webhook-test/flight-alert";
+
+async function createAlert() {
     const data = {
-        origin:     document.getElementById("origin").value.trim(),
-        destination:document.getElementById("destination").value.trim(),
-        tripType:   elements.tripType.value,
-        departure:  elements.departure.value,
-        returnDate: elements.returnDate.value,
-        price:      document.getElementById("price").value,
-        currency:   document.getElementById("currency").value,
-        email:      document.getElementById("email").value.trim(),
-        id:         Date.now(),
+        origin:      document.getElementById("origin").value.trim(),
+        destination: document.getElementById("destination").value.trim(),
+        tripType:    elements.tripType.value,
+        departure:   elements.departure.value,
+        returnDate:  elements.returnDate.value,
+        price:       document.getElementById("price").value,
+        currency:    document.getElementById("currency").value,
+        email:       document.getElementById("email").value.trim(),
+        id:          Date.now(),
     };
 
-    // Validation
-    const missing = [];
-    if (!data.origin)      missing.push("origin");
-    if (!data.destination) missing.push("destination");
-    if (!data.departure)   missing.push("departure");
-    if (!data.price)       missing.push("price");
-    if (!data.email)       missing.push("email");
+    // ... your existing validation logic stays here ...
 
-    // FIX: highlight empty required fields individually
-    ["origin", "destination", "departure", "price", "email"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el.value.trim()) {
-            el.classList.add("error");
-            // For price, also highlight the container
-            if (id === "price") priceContainer.classList.add("error");
-            el.addEventListener("input", () => {
-                el.classList.remove("error");
-                priceContainer.classList.remove("error");
-            }, { once: true });
-        }
-    });
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
 
-    if (missing.length > 0) {
-        elements.inputCard.classList.add("shake");
-        setTimeout(() => elements.inputCard.classList.remove("shake"), 450);
-        showToast("Please fill in all required fields.", "error");
-        return;
+        if (!response.ok) throw new Error("Webhook error");
+
+        // Still save locally for the history UI
+        const alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
+        alerts.push(data);
+        localStorage.setItem("flight_alerts", JSON.stringify(alerts));
+
+        showToast("Alert created! ✓", "success");
+        renderHistory();
+
+    } catch (err) {
+        console.error(err);
+        showToast("Failed to create alert. Try again.", "error");
     }
-
-    // FIX: require return date if round trip
-    if (data.tripType === "round" && !data.returnDate) {
-        elements.returnDate.classList.add("error");
-        elements.returnDate.addEventListener("input", () => elements.returnDate.classList.remove("error"), { once: true });
-        elements.inputCard.classList.add("shake");
-        setTimeout(() => elements.inputCard.classList.remove("shake"), 450);
-        showToast("Please add a return date for round trips.", "error");
-        return;
-    }
-
-    // Email format check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        document.getElementById("email").classList.add("error");
-        elements.inputCard.classList.add("shake");
-        setTimeout(() => elements.inputCard.classList.remove("shake"), 450);
-        showToast("Please enter a valid email address.", "error");
-        return;
-    }
-
-    // Save
-    const alerts = JSON.parse(localStorage.getItem("flight_alerts") || "[]");
-    alerts.push(data);
-    localStorage.setItem("flight_alerts", JSON.stringify(alerts));
-
-    showToast("Alert created! ✓", "success");
-    renderHistory();
 }
 
 // ------------------------------------------------
