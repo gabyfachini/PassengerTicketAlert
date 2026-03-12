@@ -32,7 +32,17 @@ renderHistory();
 setupAutocomplete("origin", "origin-list");
 setupAutocomplete("destination", "destination-list");
 
-// Set today as the minimum departure date
+// FIX: sync has-value on the price container (not just the inner input)
+const priceInput     = document.getElementById("price");
+const priceContainer = document.querySelector(".price-input-container");
+
+function updatePriceContainer() {
+    priceContainer.classList.toggle("has-value", Boolean(priceInput.value));
+}
+
+priceInput.addEventListener("input",  updatePriceContainer);
+priceInput.addEventListener("change", updatePriceContainer);
+updatePriceContainer();
 const todayStr = new Date().toISOString().split("T")[0];
 elements.departure.min = todayStr;
 
@@ -209,14 +219,20 @@ function createAlert() {
     if (!data.origin)      missing.push("origin");
     if (!data.destination) missing.push("destination");
     if (!data.departure)   missing.push("departure");
+    if (!data.price)       missing.push("price");
     if (!data.email)       missing.push("email");
 
     // FIX: highlight empty required fields individually
-    ["origin", "destination", "departure", "email"].forEach((id) => {
+    ["origin", "destination", "departure", "price", "email"].forEach((id) => {
         const el = document.getElementById(id);
         if (!el.value.trim()) {
             el.classList.add("error");
-            el.addEventListener("input", () => el.classList.remove("error"), { once: true });
+            // For price, also highlight the container
+            if (id === "price") priceContainer.classList.add("error");
+            el.addEventListener("input", () => {
+                el.classList.remove("error");
+                priceContainer.classList.remove("error");
+            }, { once: true });
         }
     });
 

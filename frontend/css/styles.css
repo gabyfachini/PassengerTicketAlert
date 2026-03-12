@@ -191,9 +191,13 @@ label {
     margin-bottom: 7px;
 }
 
-/* ================================================
-   INPUTS & SELECTS
-   ================================================ */
+/* Required field indicator */
+.required-star {
+    color: var(--primary);
+    font-size: 13px;
+    line-height: 1;
+    vertical-align: middle;
+}
 input, select {
     width: 100%;
     padding: 10px 12px;
@@ -286,40 +290,35 @@ input[type="number"] { -moz-appearance: textfield; }
     box-shadow: 0 0 0 3px var(--primary-light);
 }
 
+/* When the price amount has a value, highlight the whole container */
+.price-input-container.has-value {
+    border-color: var(--primary);
+}
+
+.price-input-container.error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
 #currency {
-    /* FIX: intrinsic width, not 100% */
     width: auto;
-    min-width: 90px;
+    /* Narrow: just enough for the symbol */
+    min-width: 48px;
     flex-shrink: 0;
     border: none;
     border-radius: 0;
-    background: var(--bg);
-    /* FIX: right divider between currency and amount */
+    /* Translucent background instead of solid grey */
+    background: transparent;
     border-right: 1.5px solid var(--border);
     box-shadow: none !important;
-    /* FIX: appearance for custom look */
     appearance: none;
     -webkit-appearance: none;
-    padding-right: 24px;
+    /* No extra padding — symbol is short */
+    padding: 10px 10px;
     cursor: pointer;
-}
-
-/* small arrow for currency select */
-.price-input-container::after {
-    content: '▾';
-    position: absolute;
-    /* We'll use a wrapper trick instead; handled via parent relative */
-    pointer-events: none;
-}
-
-.price-field-wrap {
-    position: relative;
-    flex-shrink: 0;
-    min-width: 90px;
-}
-
-.price-field-wrap .select-arrow {
-    right: 8px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary);
 }
 
 #price {
@@ -327,6 +326,7 @@ input[type="number"] { -moz-appearance: textfield; }
     border: none;
     border-radius: 0;
     box-shadow: none !important;
+    background: transparent;
 }
 
 /* ================================================
